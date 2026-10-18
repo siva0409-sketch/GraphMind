@@ -1,6 +1,8 @@
 from contextlib import asynccontextmanager
+from pathlib import Path
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from .database import get_graph, init_graph
 from .memory import create_session, list_sessions, session_exists, save_message, get_messages
 from .knowledge import upsert_entity, add_relationship, search_knowledge
@@ -14,8 +16,13 @@ async def lifespan(app: FastAPI):
     yield
 
 app = FastAPI(title="GraphMind API", version="1.0.0", lifespan=lifespan)
-app.add_middleware(CORSMiddleware, allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
-                   allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.get("/api/health")
 def health():
@@ -68,3 +75,8 @@ def knowledge_search(q: str, limit: int = 10):
     if limit < 1 or limit > 50:
         raise HTTPException(status_code=400, detail="limit must be between 1 and 50")
     return search_knowledge(q, limit)
+
+# Serve built frontend if dist directory exists
+frontend_dist = Path(__file__).resolve().parents[2] / "frontend" / "dist"
+if frontend_dist.exists():
+    app.mount("/", StaticFiles(directory=str(frontend_dist), html=True), name="frontend")

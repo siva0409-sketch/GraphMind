@@ -1,27 +1,44 @@
 # GraphMind — FalkorDB Agent with Session Memory
 
-A starter hackathon project: FastAPI + FalkorDB + OpenAI-compatible chat generation + React UI.
+A full-stack AI knowledge agent: FastAPI + FalkorDB + Google Gemini (`gemini-3.8-flash`) + React UI.
 
-## Run with Docker
+## Run with Docker (Local)
 1. Copy `.env.example` to `.env`.
-2. Optionally add your `OPENAI_API_KEY` to `.env`.
+2. Add your `GEMINI_API_KEY` to `.env`.
 3. Run `docker compose up --build`.
 4. Open http://localhost:5173. API docs: http://localhost:8000/docs.
 
-## Without Docker
-Run FalkorDB locally, then:
-- Backend: `cd backend`, create/activate a Python virtual environment, `pip install -r requirements.txt`, then `uvicorn app.main:app --reload --port 8000`
-- Frontend: `cd frontend`, run `npm install`, then `npm run dev`
+## Without Docker (Local)
+Run FalkorDB locally on port 6379, then:
+- Backend: `cd backend`, `pip install -r requirements.txt`, then `uvicorn app.main:app --reload --port 8000`
+- Frontend: `cd frontend`, `npm install`, then `npm run dev`
+
+---
+
+## Deploy to Render
+
+### 1. Database (FalkorDB)
+Because Render free web services are ephemeral, use a hosted FalkorDB instance:
+- Create a free instance at **[FalkorDB Cloud](https://app.falkordb.cloud/)** (Free Tier available).
+- Copy the connection URL or Host, Port, and Password.
+
+### 2. Deploy via Render Blueprint (Recommended)
+1. Push your repository to GitHub.
+2. In the [Render Dashboard](https://dashboard.render.com/), click **New +** > **Blueprint**.
+3. Connect your `GraphMind` repository (`render.yaml` will be detected automatically).
+4. Fill in the required environment variables:
+   - `GEMINI_API_KEY`: Your Gemini API key.
+   - `FALKORDB_URL` (or `FALKORDB_HOST`, `FALKORDB_PORT`, `FALKORDB_PASSWORD`): From your FalkorDB Cloud database.
+5. Click **Apply**. Both backend and frontend will be built and deployed automatically!
+
+---
 
 ## What is included
 - Persistent session messages stored in FalkorDB
 - Knowledge entities and relationships stored in FalkorDB
 - Graph fact retrieval to ground answers
-- OpenAI API integration when `OPENAI_API_KEY` is set
-- Graph-only fallback if no API key is configured
+- Gemini API integration with `gemini-3.8-flash`
 - React chat UI, session list, add-entity form, add-relationship form, and graph-evidence panel
-
-The graph starts empty intentionally. Add your own authorized information in the UI or via the API. This starter does not bundle a fake dataset.
 
 ## Example API calls
 ```bash
@@ -31,8 +48,3 @@ curl -X POST http://localhost:8000/api/knowledge/relationships -H "Content-Type:
 ```
 
 Then ask: `Which technology does Driver Drowsiness Detection use?`
-
-## Notes
-- A session ID identifies one conversation. Its messages persist across page reloads and backend restarts.
-- This starter implements persistent session history, not automatic cross-session user-profile memory.
-- Add authentication, authorization, rate limits, and privacy controls before exposing it publicly.

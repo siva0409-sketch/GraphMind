@@ -1,0 +1,38 @@
+services:
+  # Backend Web Service
+  - type: web
+    name: graphmind-backend
+    env: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    plan: free
+    healthCheckPath: /api/health
+    envVars:
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GEMINI_MODEL
+        value: gemini-3.8-flash
+      - key: FALKORDB_URL
+        sync: false
+      - key: FALKORDB_HOST
+        value: localhost
+      - key: FALKORDB_PORT
+        value: 6379
+      - key: FALKORDB_PASSWORD
+        sync: false
+      - key: FALKORDB_GRAPH
+        value: graphmind
+
+  # Frontend Static Site
+  - type: web
+    name: graphmind-frontend
+    env: static
+    plan: free
+    buildCommand: cd frontend && npm install && npm run build
+    staticPublishPath: ./frontend/dist
+    envVars:
+      - key: VITE_API_BASE_URL
+        fromService:
+          type: web
+          name: graphmind-backend
+          property: host
