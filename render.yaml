@@ -2,7 +2,7 @@ services:
   # Backend Web Service
   - type: web
     name: graphmind-backend
-    env: docker
+    runtime: docker
     dockerfilePath: ./backend/Dockerfile
     dockerContext: ./backend
     plan: free
@@ -23,11 +23,10 @@ services:
       - key: FALKORDB_GRAPH
         value: graphmind
 
-  # Frontend Static Site
+  # Frontend Static Site (CDN-hosted, no plan field required)
   - type: web
     name: graphmind-frontend
-    env: static
-    plan: free
+    runtime: static
     buildCommand: cd frontend && npm install && npm run build
     staticPublishPath: ./frontend/dist
     envVars:
